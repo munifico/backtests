@@ -30,13 +30,24 @@ d = yf.download(["spy", "qqq", "vwo", "tlt", "shy"],
 print(d.head())
 
 # %%
+# Benchmark
+bm_layer = [
+    bt.algos.RunMonthly(),
+    bt.algos.SelectAll(),
+    bt.algos.WeighEqually(),
+    bt.algos.Rebalance()
+]
+bm_st = bt.Strategy('Benchmark', bm_layer)
+benchmark = bt.Backtest(bm_st, d)
+
+# %%
 # 1개월 수익률 최대 종목을 선택할 경우
 test1 = bt.Backtest(get_momentum_strategy('m1', 1), d)
 # 3개월 수익률 최대 종목을 선택할 경우
 test3 = bt.Backtest(get_momentum_strategy('m3', 3), d)
 # 6개월 수익률 최대 종목을 선택할 경우
 test6 = bt.Backtest(get_momentum_strategy('m6', 6), d)
-res = bt.run(test1, test3, test6)
+res = bt.run(benchmark, test1, test3, test6)
 
 # %%
 res.display()

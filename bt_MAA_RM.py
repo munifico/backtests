@@ -32,7 +32,7 @@ class StatRelativeReturn(bt.Algo):
         selected = target.temp["selected"]
         for i, lookback in enumerate(self.lookbacks):
             t0 = target.now - self.lag
-            prc = target.universe.loc[t0 - lookback: t0, selected]
+            prc = target.universe.loc[(t0 - lookback): t0, selected]
             stat.append(prc.calc_total_return() * self.lookback_weights[i])
         target.temp["stat"] = sum(stat)
         return True
@@ -91,17 +91,33 @@ def get_momentum_strategy(name, lookbacks, lookback_weights):
 # 'Adj Close'를 이용하여 가격 조정
 d = yf.download(["spy", "qqq", "vwo", "tlt", "shy"],
                 start="2010-01-01",
-                end="2019-12-12")['Adj Close']
+                end="2019-12-12")['Adj Close'].dropna()
 print(d.head())
 
 # %%
-# 1개월 수익률 최대 종목을 선택할 경우
+# Benchmark
+bm_layer = [
+    bt.algos.RunMonthly(),
+    bt.algos.SelectAll(),
+    bt.algos.WeighEqually(),
+    bt.algos.Rebalance()
+]
+bm_st = bt.Strategy('Benchmark', bm_layer)
+benchmark = bt.Backtest(bm_st, d)
+
+# %%
+# 모멘텀 가중치를 1:1:1로 할 경우
 test1 = bt.Backtest(get_momentum_strategy('m1', [1, 3, 6], [1, 1, 1]), d)
-# 3개월 수익률 최대 종목을 선택할 경우
-test3 = bt.Backtest(get_momentum_strategy('m3', [1, 3, 6], [6, 2, 1]), d)
-# 6개월 수익률 최대 종목을 선택할 경우
-test6 = bt.Backtest(get_momentum_strategy('m6', [1, 3, 6], [1, 2, 6]), d)
-res = bt.run(test1, test3, test6)
+# 모멘텀 가중치를 6:2:1로 할 경우
+test2 = bt.Backtest(get_momentum_strategy('m2', [1, 3, 6], [6, 2, 1]), d)
+# 모멘텀 가중치를 1:2:6로 할 경우
+test3 = bt.Backtest(get_momentum_strategy('m3', [1, 3, 6], [1, 2, 6]), d)
+# 모멘텀 가중치를 1:2:6로 할 경우
+test4 = bt.Backtest(get_momentum_strategy(
+    'm4', [1, 3, 6, 12], [12, 4, 2, 1]), d)
+
+# %%
+res = bt.run(benchmark, test1, test2, test3, test4)
 
 # %%
 res.display()
