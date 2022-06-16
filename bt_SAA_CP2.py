@@ -15,22 +15,37 @@ portfolios = [
     # https://lazyquant.xyz/allocation/detail/CP
     {
         "name": "CP_ORG",
-        "weight": {"SPY": 0.5, "TIP": 0.5}
+        "weight": {"SPY": 0.5, "SCHP": 0.5}
     },
     # CP custom
     {
-        "name": "CP_CT1",
-        "weight": {"SPY": 0.4, "TIP": 0.4, "GLD": 0.2}
+        "name": "CP_ORG+",
+        "weight": {"SPY": 0.4, "SCHP": 0.4, "QQQ": 0.1, "SCHD": 0.1}
     },
-    # CP custom
+    # CP AOA 60%
     {
-        "name": "CP_CT2",
-        "weight": {"SPY": 0.4, "TIP": 0.4, "QQQ": 0.1, "SCHD": 0.1}
+        "name": "CP_AOA60",
+        "weight": {"AOA": 0.6, "SCHP": 0.4}
+    },
+    # CP AOA 60%+
+    {
+        "name": "CP_AOA60+",
+        "weight": {"AOA": 0.6, "SCHP": 0.2, "QQQ": 0.1, "SCHD": 0.1}
+    },
+    # CP AOR 50%
+    {
+        "name": "CP_AOR80",
+        "weight": {"AOR": 0.80, "SCHP": 0.2}
+    },
+    # GB AOM 40%
+    {
+        "name": "GB_AOM40",
+        "weight": {"AOM": 0.40, "QQQ": 0.2, "SCHD": 0.2, "GLD": 0.1, "VNQ": 0.1}
     },
     # Benchmark
     {
         "name": "Benchmark",
-        "weight": {"SPY": 1.0}
+        "weight": {"AOR": 1.0}
     }
 ]
 
