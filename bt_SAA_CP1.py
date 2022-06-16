@@ -10,40 +10,31 @@ import bt
 # d = bt.get(["spy", "agg"], start="2010-01-01")
 
 portfolios = [
-    # benchmark
-    {
-        "name": "BM",
-        "weight": {"SPY": 1}
-    },
-    # 카우치 포테이토
+    # Couch Potato(CP)
     # https://lazyquant.xyz/allocation/detail/CP
     {
-        "name": "CP",
-        "weight": {"SPY": 0.50, "TIP": 0.50}
+        "name": "CP_ORG",
+        "weight": {"SPY": 0.5, "TIP": 0.5}
     },
-    # 영구 포트폴리오(Permanent Portfolio, PP)
-    # https://lazyquant.xyz/allocation/detail/PP
+    # CP custom
     {
-        "name": "PP",
-        "weight": {"SPY": 0.25, "GLD": 0.25, "TLT": 0.25, "BIL": 0.25}
+        "name": "CP_CST",
+        "weight": {"SPY": 0.4, "TIP": 0.4, "GLD": 0.2}
     },
-    # 황금나비(Golden Butterfly Portfolio, GB)
-    # https://lazyquant.xyz/allocation/detail/GB
+    # CP AOA 60%
     {
-        "name": "GB",
-        "weight": {"SPY": 0.2, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.2, "SHY": 0.2}
+        "name": "CP_AOA60",  # golden butterfly custom
+        "weight": {"AOA": 0.6, "TIP": 0.4}
     },
-    # 황금나비 변형(Golden Butterfly Custom, GB2)
-    #
+    # CP AOR 50%
     {
-        "name": "GB2",  #
-        "weight": {"SPY": 0.3, "QQQ": 0.3, "GLD": 0.2, "TLT": 0.1, "SHY": 0.1}
+        "name": "CP_AOR80",
+        "weight": {"AOR": 0.80, "TIP": 0.2}
     },
-    # 예일대 기금
-    # https://lazyquant.xyz/allocation/detail/YE
+    # Benchmark
     {
-        "name": "YE",
-        "weight": {"SPY": 0.30, "VNQ": 0.20, "VEA": 0.15, "EEM": 0.5, "TLT": 0.15, "TIP": 0.15}
+        "name": "Benchmark",
+        "weight": {"AOR": 1.0}
     }
 ]
 
@@ -63,8 +54,8 @@ print(d.head())
 # %%
 def get_strategy(name, weight):
     s_layer = [
-        bt.algos.RunYearly(),
         # bt.algos.RunMonthly(),
+        bt.algos.RunYearly(),
         bt.algos.SelectAll(),
         # bt.algos.WeighEqually(),\
         bt.algos.WeighSpecified(**weight),

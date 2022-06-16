@@ -10,16 +10,21 @@ import bt
 # d = bt.get(["spy", "agg"], start="2010-01-01")
 
 portfolios = [
-    # 황금나비
+    # 황금나비(Golden Butterfly, GB)
     # https://lazyquant.xyz/allocation/detail/GB
     {
-        "name": "GB_ORG",  # golden butterfly
+        "name": "GB_ORG",  #
         "weight": {"SPY": 0.2, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.2, "SHY": 0.2}
     },
-    # 황금나비 커스텀
+    # 황금나비 커스텀(Golden Butterfly Custom, GB2)
     {
-        "name": "GB_CST",  # golden butterfly
-        "weight": {"SPY": 0.2, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.2, "SHY": 0.1, "SCHD": 0.1}
+        "name": "GB_CST1",  # golden butterfly
+        "weight": {"SPY": 0.2, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.2, "TIP": 0.1, "SCHD": 0.1}
+    },
+    # 황금나비 커스텀(Golden Butterfly Custom, GB3)
+    {
+        "name": "GB_CST2",  # golden butterfly
+        "weight": {"SPY": 0.2, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.1, "TIP": 0.2, "SCHD": 0.1}
     },
     # 황금나비 변형1 AOM 50%
     {
@@ -28,8 +33,12 @@ portfolios = [
     },
     # 황금나비 변형2 AOM 40%
     {
-        "name": "GB_AOM40",
+        "name": "GB_AOM40_1",
         "weight": {"AOM": 0.40, "QQQ": 0.20, "GLD": 0.2, "SCHD": 0.2}
+    },
+    {
+        "name": "GB_AOM40_2",
+        "weight": {"AOM": 0.40, "QQQ": 0.10, "GLD": 0.2, "SCHD": 0.2, "VNQ": 0.1}
     }
 ]
 
@@ -49,7 +58,8 @@ print(d.head())
 # %%
 def get_strategy(name, weight):
     s_layer = [
-        bt.algos.RunMonthly(),
+        # bt.algos.RunMonthly(),
+        bt.algos.RunYearly(),
         bt.algos.SelectAll(),
         # bt.algos.WeighEqually(),\
         bt.algos.WeighSpecified(**weight),
