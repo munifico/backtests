@@ -35,3 +35,4 @@ poetry add jupyter bt yfinance
 
 * [Flexible Backtesting for Python 1](https://beok.tistory.com/51)
 * [Flexible Backtesting with BT](https://medium.com/@richardhwlin/flexible-backtesting-with-bt-7295c0dde5dd)
+* [Advanced Backtesting with BT. Introduction | by Richard L | Medium](https://medium.com/@richardhwlin/advanced-backtesting-with-bt-635ed441cb60)

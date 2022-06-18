@@ -4,19 +4,27 @@ import yfinance as yf
 import bt
 %matplotlib inline
 
+#########################################
+# Code For Simple Momentum Strategy(SM)
+#########################################
+
 # %%
 
 
 def get_momentum_strategy(name, lookback_month):
     layer = [
         bt.algos.RunMonthly(),
+        bt.algos.PrintInfo(
+            '{name}:{now}. Value:{_value:0.0f}, Price:{_price:0.4f}'
+        ),
         bt.algos.SelectAll(),
         bt.algos.SelectMomentum(
             n=1,
             lookback=pd.DateOffset(months=lookback_month),
             lag=pd.DateOffset(days=0)),
         bt.algos.WeighEqually(),
-        bt.algos.Rebalance()
+        bt.algos.Rebalance(),
+        bt.algos.PrintTempData()
     ]
     return bt.Strategy(name, layer)
 
@@ -24,7 +32,7 @@ def get_momentum_strategy(name, lookback_month):
 # %%
 # d = bt.get(["spy", "agg"], start="2010-01-01")
 # 'Adj Close'를 이용하여 가격 조정
-d = yf.download(["spy", "qqq", "vwo", "tlt", "shy"],
+d = yf.download(["SPY", "QQQ", "VWO", "TLT", "SHY"],
                 start="2010-01-01",
                 end="2019-12-12")['Adj Close']
 print(d.head())
