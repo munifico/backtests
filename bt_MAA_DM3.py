@@ -15,61 +15,49 @@ from lib.maa import SelectDualMomentum
 # 'Adj Close'를 이용하여 가격 조정
 portfolios = [
     {
-        "name": "SPY",
+        "name": "SPY/TLT",
         "in_market": ["SPY"],
         "out_market": "TLT"
     },
     {
-        "name": "QQQ",
+        "name": "QQQ/TLT",
         "in_market": ["QQQ"],
         "out_market": "TLT"
     },
     {
-        "name": "SPY+VWO",
-        "in_market": ["SPY", "VWO"],
+        "name": "K200/TLT",    # TIGER 200
+        "in_market": ["102110.KS"],
         "out_market": "TLT"
     },
     {
-        "name": "SPY+QQQ",
-        "in_market": ["SPY", "QQQ"],
+        "name": "S|K/TLT",
+        "in_market": ["SPY", "102110.KS"],
         "out_market": "TLT"
     },
     {
-        "name": "SPY+IWS",
-        "in_market": ["SPY", "IWS"],
+        "name": "Q|K/TLT",
+        "in_market": ["QQQ", "102110.KS"],
         "out_market": "TLT"
     },
     {
-        "name": "SPY+VWO+QQQ",
-        "in_market": ["SPY", "VWO", "QQQ"],
-        "out_market": "TLT"
-    },
-    {
-        "name": "SPY+VWO+IWS",
-        "in_market": ["SPY", "VWO", "IWS"],
-        "out_market": "TLT"
-    },
-    {
-        "name": "SPY+QQQ+VWO+IWS",
-        "in_market": ["SPY", "QQQ", "VWO", "IWS"],
-        "out_market": "TLT"
-    },
-    {
-        "name": "SPY+QQQ+VWO+TIP",
-        "in_market": ["SPY", "QQQ", "VWO", "TIP"],
-        "out_market": "TLT"
-    },
-    {
-        "name": "SPY+QQQ+VWO+IWP+IJH",
-        "in_market": ["SPY", "QQQ", "VWO", "IWP", "IJH"],
+        "name": "S|Q|K/TLT",
+        "in_market": ["SPY", "QQQ", "102110.KS"],
         "out_market": "TLT"
     }
 ]
+
+benchmarks = [
+    {
+        "name": "SPY+QQQ+K",
+        "weight": {"SPY": 0.34, "QQQ": 0.33, "102110.KS": 0.33}
+    },
+]
+
 lookbacks = [1, 3, 6]  # Month
 lookback_weights = [5, 3, 2]  # Ratio
 
-data_start_date = "2006-01-01"
-data_end_date = "2019-12-12"
+data_start_date = "2000-01-01"
+data_end_date = "2021-12-12"
 #########################################
 
 # %%
@@ -80,7 +68,7 @@ print("# All Tickers:")
 print(tickers)
 
 # %%
-# Momentum 계산을 위해ㅔ 6개월 전 데이터부터 가져옴
+# Momentum 계산을 위해 6개월 전 데이터부터 가져옴
 month_offset = max(lookbacks)
 _start_date = date.fromisoformat(data_start_date)
 _start_date_off = _start_date - timedelta(days=month_offset * 31)
@@ -93,21 +81,33 @@ d = _d['Adj Close'].dropna()
 print(d.head())
 
 # %%
+# Download Data for benchmark
+_bm_tickers = sum([list(it["weight"].keys()) for it in benchmarks], [])
+bm_tickers = list(set(_bm_tickers))
+_bm_d = yf.download(bm_tickers, start=start_date_off, end=data_end_date)
+bm_d = _bm_d['Adj Close'].dropna()
+print(bm_d.head())
+
+
+# %%
 # 데이터는 모멘텀 계산을 위해 6개월 이전부터 가져왔지만, 백테스트는 지정한 일자부터 시작함
 first_date_of_data = d.index[0].to_pydatetime().date()
 _new_start_date = first_date_of_data if _start_date < first_date_of_data else _start_date
 new_start_date = _new_start_date.isoformat()
+print("# Firtst Date of Data: ", end="")
 print(first_date_of_data)
-print(_new_start_date)
+print("# First Date of Backtest: ", end="")
 print(new_start_date)
 
-d = d[d.index >= new_start_date]
+# d = d[d.index >= new_start_date]
 
 # %%
 
 
-def get_dualmomentum_strategy(name, lookbacks, lookback_weights, in_market_asset, out_market_asset):
+def get_dualmomentum_strategy(name, lookbacks, lookback_weights, in_market_asset, out_market_asset, new_start_date):
     layer = [
+        bt.algos.RunAfterDate(new_start_date),
+        bt.algos.PrintDate(),
         bt.algos.RunMonthly(),
         bt.algos.SelectThese(in_market_asset),
         SelectDualMomentum(
@@ -124,15 +124,21 @@ def get_dualmomentum_strategy(name, lookbacks, lookback_weights, in_market_asset
 
 # %%
 # Benchmark
-bm_layer = [
-    bt.algos.RunMonthly(),
-    bt.algos.SelectAll(),
-    bt.algos.WeighEqually(),
-    bt.algos.Rebalance()
-]
-bm_st = bt.Strategy('Benchmark', bm_layer)
-benchmark = bt.Backtest(bm_st, d)
+def get_benchmark_strategy(name, weight, new_start_date):
+    layer = [
+        bt.algos.RunAfterDate(new_start_date),
+        bt.algos.RunMonthly(),
+        bt.algos.SelectAll(),
+        bt.algos.WeighSpecified(**weight),
+        bt.algos.Rebalance()
+    ]
+    return bt.Strategy(name, layer)
 
+
+# %%
+bm_strategys = [get_benchmark_strategy(
+    pf["name"], pf["weight"], new_start_date) for pf in benchmarks]
+bm_tests = [bt.Backtest(s, d) for s in bm_strategys]
 # %%
 
 # 종목을 바꾸어가며 듀얼 모멘텀 테스트
@@ -140,12 +146,12 @@ benchmark = bt.Backtest(bm_st, d)
 # name, lookbacks, lookback_weights, in_market_asset, out_market_asset
 
 strategys = [
-    get_dualmomentum_strategy(pf["name"], lookbacks, lookback_weights, pf["in_market"], pf["out_market"]) for pf in portfolios
+    get_dualmomentum_strategy(pf["name"], lookbacks, lookback_weights, pf["in_market"], pf["out_market"], new_start_date) for pf in portfolios
 ]
 tests = [bt.Backtest(s, d) for s in strategys]
 
 # %%
-res = bt.run(benchmark, *tests)
+res = bt.run(*bm_tests, *tests)
 
 # %%
 res.display()
