@@ -1,8 +1,8 @@
 # %%
-import pandas as pd
 import yfinance as yf
 import bt
-from lib.maa import SelectRelativeMomentum
+from btpp.strategy import relative_momentum_strategy
+from btpp.helper import get_start_date_off
 %matplotlib inline
 
 #########################################
@@ -10,34 +10,68 @@ from lib.maa import SelectRelativeMomentum
 #########################################
 
 # %%
+#########################################
+
+tickers = ["SPY", "QQQ", "VWO", "TLT"]
+start_date = "2006-01-01"
+end_date = "2019-12-12"
+
+porfolios = [
+    {
+        "name": 'm6:2:1',
+        "lookbacks": [1, 3, 6],
+        "lookback_weights": [6, 2, 1]
+    },
+    {
+        "name": 'm5:3:2',
+        "lookbacks": [1, 3, 6],
+        "lookback_weights": [5, 3, 2]
+    },
+    {
+        "name": 'm1:1:1',
+        "lookbacks": [1, 3, 6],
+        "lookback_weights": [1, 1, 1]
+    },
+    {
+        "name": 'm2:3:5',
+        "lookbacks": [1, 3, 6],
+        "lookback_weights": [2, 3, 5]
+    },
+    {
+        "name": 'm1:2:6',
+        "lookbacks": [1, 3, 6],
+        "lookback_weights": [1, 2, 6]
+    },
+    {
+        "name": 'm12:4:2:1',
+        "lookbacks": [1, 3, 6, 12],
+        "lookback_weights": [12, 4, 2, 1]
+    }
+]
+
+start_trading_date = "2010-01-01"
+end_trading_date = "2021-12-12"
+
+month_offset = 12
+#########################################
+
+# %%
+start_date_off = get_start_date_off(
+    start_trading_date, month_offset=month_offset)
+print(start_date_off)
+
+# %%
+
 # d = bt.get(["spy", "agg"], start="2010-01-01")
 # 'Adj Close'를 이용하여 가격 조정
-tickers = ["SPY", "QQQ", "VWO", "TLT"]
-_d = yf.download(tickers, start="2006-01-01", end="2019-12-12")
+_d = yf.download(tickers, start=start_date_off, end=end_trading_date)
 d = _d['Adj Close'].dropna()
 print(d.head())
 
 # %%
-
-
-def get_momentum_strategy(name, lookbacks, lookback_weights):
-    layer = [
-        bt.algos.RunMonthly(),
-        bt.algos.SelectAll(),
-        SelectRelativeMomentum(
-            lookbacks=[pd.DateOffset(months=e) for e in lookbacks],
-            lookback_weights=lookback_weights
-        ),
-        bt.algos.WeighEqually(),
-        bt.algos.Rebalance(),
-        bt.algos.PrintTempData()
-    ]
-    return bt.Strategy(name, layer)
-
-
-# %%
 # Benchmark
 bm_layer = [
+    bt.algos.RunAfterDate(start_trading_date),
     bt.algos.RunMonthly(),
     bt.algos.SelectAll(),
     bt.algos.WeighEqually(),
@@ -49,21 +83,11 @@ benchmark = bt.Backtest(bm_st, d)
 # %%
 
 # 모멘텀 가중치를 바꾸어가며 테스트
-test1 = bt.Backtest(
-    get_momentum_strategy('m6:2:1', [1, 3, 6], [6, 2, 1]), d)
-test2 = bt.Backtest(
-    get_momentum_strategy('m5:3:2', [1, 3, 6], [5, 3, 2]), d)
-test3 = bt.Backtest(
-    get_momentum_strategy('m1:1:1', [1, 3, 6], [1, 1, 1]), d)
-test4 = bt.Backtest(
-    get_momentum_strategy('m2:3:5', [1, 3, 6], [2, 3, 5]), d)
-test5 = bt.Backtest(
-    get_momentum_strategy('m1:2:6', [1, 3, 6], [1, 2, 6]), d)
-test6 = bt.Backtest(
-    get_momentum_strategy('m12:4:2:1', [1, 3, 6, 12], [12, 4, 2, 1]), d)
+tests = [bt.Backtest(relative_momentum_strategy(pf["name"], lookbacks=pf["lookbacks"],
+                     lookback_weights=pf["lookback_weights"], assets=tickers, start_trading_date=start_trading_date), d) for pf in porfolios]
 
 # %%
-res = bt.run(benchmark, test1, test2, test3, test4, test5, test6)
+res = bt.run(benchmark, *tests)
 
 # %%
 res.display()

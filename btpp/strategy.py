@@ -1,9 +1,9 @@
 import pandas as pd
 import bt
-from lib.maa2 import SelectRelativeMomentum, SelectDualMomentum
+from btpp.algos import SelectRelativeMomentum, SelectDualMomentum
 
 
-def get_relative_momentum_strategy(
+def relative_momentum_strategy(
     name,
     n=1,
     lookbacks=[1, 3, 6],
@@ -31,7 +31,7 @@ def get_relative_momentum_strategy(
     return bt.Strategy(name, layer, all_assets)
 
 
-def get_dual_momentum_strategy(
+def dual_momentum_strategy(
     name,
     n=1,
     alternative_n=1,
