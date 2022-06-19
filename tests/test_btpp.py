@@ -1,4 +1,4 @@
-from bt_training import __version__
+from btpp import __version__
 
 
 def test_version():

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bt-training"
+name = "btpp"
 version = "0.1.0"
 description = ""
 authors = ["Junho OH <pinedance@gmail.com>"]
