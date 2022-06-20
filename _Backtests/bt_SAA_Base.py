@@ -1,11 +1,18 @@
 # %%
 import yfinance as yf
 import bt
+from btpp.strategy import saa_weight_strategy
 %matplotlib inline
 
+#########################################
+# Code For Static Assets Allocation Strategy(SAA)
 # 정적 자산배분 백테스트
+# 익히 알려진 자산배분 방법 백테스트
+#########################################
 
 # %%
+
+#########################################
 # d = bt.get(["spy", "agg"], start="2010-01-01")
 
 portfolios = [
@@ -32,12 +39,6 @@ portfolios = [
         "name": "GB",
         "weight": {"SPY": 0.2, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.2, "SHY": 0.2}
     },
-    # 황금나비 변형(Golden Butterfly Custom, GB2)
-    #
-    {
-        "name": "GB2",  #
-        "weight": {"SPY": 0.3, "QQQ": 0.3, "GLD": 0.2, "TLT": 0.1, "SHY": 0.1}
-    },
     # 예일대 기금
     # https://lazyquant.xyz/allocation/detail/YE
     {
@@ -45,6 +46,10 @@ portfolios = [
         "weight": {"SPY": 0.30, "VNQ": 0.20, "VEA": 0.15, "EEM": 0.5, "TLT": 0.15, "TIP": 0.15}
     }
 ]
+
+start_trading_date = "2000-01-01"
+end_trading_date = "2021-12-12"
+#########################################
 
 # %%
 _tickers = sum([list(it["weight"].keys()) for it in portfolios], [])
@@ -54,26 +59,18 @@ print(tickers)
 
 # %%
 d = yf.download(tickers,
-                start="2010-01-01",
-                end="2019-12-12")['Adj Close'].dropna()
+                start=start_trading_date,
+                end=end_trading_date)['Adj Close'].dropna()
 print(d.head())
 
 
 # %%
-def get_strategy(name, weight):
-    s_layer = [
-        bt.algos.RunYearly(),
-        # bt.algos.RunMonthly(),
-        bt.algos.SelectAll(),
-        # bt.algos.WeighEqually(),\
-        bt.algos.WeighSpecified(**weight),
-        bt.algos.Rebalance()
-    ]
-    return bt.Strategy(name, s_layer)
 
-
-# %%
-strategys = [get_strategy(pf["name"], pf["weight"]) for pf in portfolios]
+strategys = [saa_weight_strategy(
+    pf["name"],
+    assets_with_weight=pf["weight"],
+    run_term="yearly")
+    for pf in portfolios]
 tests = [bt.Backtest(s, d) for s in strategys]
 res = bt.run(*tests)
 

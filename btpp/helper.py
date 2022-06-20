@@ -9,8 +9,8 @@ def get_start_date_off(data_start_date, month_offset=6):
     return start_date_off
 
 
-def get_real_start_trading_date(user_start_date, first_date_of_data):
-    _user_start_date = date.fromisoformat(user_start_date)
+def get_real_start_trading_date(first_date_of_data, month_offset=6):
     _first_date_of_data = date.fromisoformat(first_date_of_data)
-    start_trading_date = _first_date_of_data if _user_start_date < _first_date_of_data else _user_start_date
+    start_trading_date = _first_date_of_data + \
+        timedelta(days=month_offset * 31)
     return start_trading_date.isoformat()

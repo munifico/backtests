@@ -1,9 +1,7 @@
 # %%
-import pandas as pd
 import yfinance as yf
 import bt
-from datetime import datetime, date, timedelta
-from btpp.strategy import dual_momentum_strategy
+from btpp.strategy import dual_momentum_strategy, saa_weight_strategy
 from btpp.helper import get_start_date_off, get_real_start_trading_date
 %matplotlib inline
 
@@ -49,8 +47,9 @@ benchmarks = [
 
 lookbacks = [1, 3, 6]  # Month
 lookback_weights = [5, 3, 2]  # Ratio
+# lookback_weights = [1, 1, 1]  # Ratio
 
-start_trading_date = "2010-01-01"
+start_trading_date = "2000-01-01"
 end_trading_date = "2021-12-12"
 #########################################
 
@@ -80,7 +79,7 @@ print(d.head())
 # 데이터는 모멘텀 계산을 위해 6개월 이전부터 가져왔지만, 백테스트는 지정한 일자부터 시작함
 first_date_of_data = d.index[0].date().isoformat()
 real_start_trading_date = get_real_start_trading_date(
-    start_trading_date, first_date_of_data)
+    first_date_of_data, month_offset=month_offset)
 print("# Firtst Date of Data: ", end="")
 print(first_date_of_data)
 print("# Real Start Trading Date: ", end="")
@@ -88,22 +87,9 @@ print(real_start_trading_date)
 
 
 # %%
-# Benchmark
-def benchmark_strategy(name, weight, start_trading_date):
-    tickers = list(weight.keys())
-    layer = [
-        bt.algos.RunAfterDate(start_trading_date),
-        bt.algos.RunMonthly(),
-        bt.algos.SelectAll(),
-        bt.algos.WeighSpecified(**weight),
-        bt.algos.Rebalance()
-    ]
-    return bt.Strategy(name, layer, tickers)
 
-
-# %%
-benchmark_strategys = [benchmark_strategy(
-    pf["name"], pf["weight"], real_start_trading_date) for pf in benchmarks]
+benchmark_strategys = [saa_weight_strategy(pf["name"], assets_with_weight=pf["weight"],
+                                           run_term="monthly", start_trading_date=real_start_trading_date) for pf in benchmarks]
 benchmark_tests = [bt.Backtest(s, d) for s in benchmark_strategys]
 # %%
 # 종목을 바꾸어가며 듀얼 모멘텀 테스트
