@@ -12,7 +12,7 @@ DEFAULT = {
         pd.DateOffset(months=6),
         pd.DateOffset(months=12)
     ],
-    "lookback_weights": [0.5, 0.3, 0.2, 0],
+    "lookback_weights": [1, 1, 1, 0],
     "lag": pd.DateOffset(days=0),
 }
 
@@ -89,8 +89,8 @@ class SelectAssets(bt.Algo):
         alter_stat = stat.loc[alter_assets].sort_values(
             ascending=self.ascending)
 
-        print("# core_stat")
-        print(core_stat)
+        # print("# core_stat")
+        # print(core_stat)
 
         # handle percent n
         keep_n = self.n

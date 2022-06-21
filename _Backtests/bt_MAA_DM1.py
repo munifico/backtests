@@ -10,8 +10,7 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 #########################################
 
 # %%
-# d = bt.get(["spy", "agg"], start="2010-01-01")
-# 'Adj Close'를 이용하여 가격 조정
+#########################################
 portfolios = [
     {
         "name": "SPY/TLT",
@@ -27,6 +26,21 @@ portfolios = [
         "name": "VWO/TLT",
         "in_market": ["VWO"],
         "out_market": ["TLT"]
+    },
+    {
+        "name": "SPY/TIP",
+        "in_market": ["SPY"],
+        "out_market": ["TIP"]
+    },
+    {
+        "name": "QQQ/TIP",
+        "in_market": ["QQQ"],
+        "out_market": ["TIP"]
+    },
+    {
+        "name": "VWO/TIP",
+        "in_market": ["VWO"],
+        "out_market": ["TIP"]
     },
 ]
 
@@ -46,7 +60,7 @@ benchmarks = [
 ]
 
 lookbacks = [1, 3, 6]  # Month
-lookback_weights = [5, 3, 2]  # Ratio
+lookback_weights = [1, 1, 1]  # Ratio
 # lookback_weights = [1, 1, 1]  # Ratio
 
 start_trading_date = "2000-01-01"
@@ -71,6 +85,8 @@ start_date_off = get_start_date_off(
 print(start_date_off)
 
 # %%
+# d = bt.get(["spy", "agg"], start="2010-01-01")
+# 'Adj Close'를 이용하여 가격 조정
 _d = yf.download(tickers_all, start=start_date_off, end=end_trading_date)
 d = _d['Adj Close'].dropna()
 print(d.head())

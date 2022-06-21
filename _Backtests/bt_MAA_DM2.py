@@ -11,8 +11,8 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 #########################################
 
 # %%
-# d = bt.get(["spy", "agg"], start="2010-01-01")
-# 'Adj Close'를 이용하여 가격 조정
+#########################################
+
 portfolios = [
     {
         "name": "SPY/TLT",
@@ -25,42 +25,42 @@ portfolios = [
         "out_market": ["TLT"]
     },
     {
-        "name": "S|VWO/TLT",
+        "name": "S;V/TLT",
         "in_market": ["SPY", "VWO"],
         "out_market": ["TLT"]
     },
     {
-        "name": "S|Q/TLT",
+        "name": "S;Q/TLT",
         "in_market": ["SPY", "QQQ"],
         "out_market": ["TLT"]
     },
     {
-        "name": "S|IWS/TLT",
+        "name": "S;I/TLT",
         "in_market": ["SPY", "IWS"],
         "out_market": ["TLT"]
     },
     {
-        "name": "S|V|Q/TLT",
+        "name": "S;V;Q/TLT",
         "in_market": ["SPY", "VWO", "QQQ"],
         "out_market": ["TLT"]
     },
     {
-        "name": "S|V|I/TLT",
+        "name": "S;V;I/TLT",
         "in_market": ["SPY", "VWO", "IWS"],
         "out_market": ["TLT"]
     },
     {
-        "name": "S|Q|V|I/TLT",
+        "name": "S;Q;V;I/TLT",
         "in_market": ["SPY", "QQQ", "VWO", "IWS"],
         "out_market": ["TLT"]
     },
     {
-        "name": "S|Q|V|TIP/TLT",
+        "name": "S;Q;V;TIP/TLT",
         "in_market": ["SPY", "QQQ", "VWO", "TIP"],
         "out_market": ["TLT"]
     },
     {
-        "name": "S|Q|V|I|IJH/TLT",
+        "name": "S;Q;V;I;I/TLT",
         "in_market": ["SPY", "QQQ", "VWO", "IWS", "IJH"],
         "out_market": ["TLT"]
     }
@@ -74,7 +74,7 @@ benchmarks = [
 ]
 
 lookbacks = [1, 3, 6]  # Month
-lookback_weights = [5, 3, 2]  # Ratio
+lookback_weights = [1, 1, 1]  # Ratio
 
 start_trading_date = "2000-01-01"
 end_trading_date = "2021-12-12"
@@ -98,6 +98,8 @@ start_date_off = get_start_date_off(
 print(start_date_off)
 
 # %%
+# d = bt.get(["spy", "agg"], start="2010-01-01")
+# 'Adj Close'를 이용하여 가격 조정
 _d = yf.download(tickers_all, start=start_date_off, end=end_trading_date)
 d = _d['Adj Close'].dropna()
 print(d.head())

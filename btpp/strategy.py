@@ -25,9 +25,14 @@ def saa_equal_strategy(
     # if verbose is True:
     #     layer.append(bt.algos.PrintDate())
 
+    layer.append(RUN_TERM.get(run_term)())
+
+    if len(assets) > 0:
+        layer.append(bt.algos.SelectThese(assets))
+    else:
+        layer.append(bt.algos.SelectAll())
+
     layer = layer + [
-        RUN_TERM.get(run_term)(),
-        bt.algos.SelectThese(assets),
         bt.algos.WeighEqually(),
         bt.algos.Rebalance()
     ]
@@ -75,6 +80,7 @@ def saa_weight_strategy(
 def simple_momentum_strategy(
     name,
     n=1,
+    run_term="monthly",
     lookback_month=1,
     start_trading_date=None,
     verbose=True
@@ -88,7 +94,7 @@ def simple_momentum_strategy(
     #     layer.append(bt.algos.PrintDate())
 
     layer = layer + [
-        bt.algos.RunMonthly(),
+        RUN_TERM.get(run_term)(),
         bt.algos.SelectAll(),
         bt.algos.SelectMomentum(
             n=n,
@@ -110,6 +116,7 @@ def simple_momentum_strategy(
 def relative_momentum_strategy(
     name,
     n=1,
+    run_term="monthly",
     lookbacks=[1, 3, 6],
     lookback_weights=[5, 3, 2],
     assets=[],
@@ -125,7 +132,7 @@ def relative_momentum_strategy(
     #     layer.append(bt.algos.PrintDate())
 
     layer = layer + [
-        bt.algos.RunMonthly(),
+        RUN_TERM.get(run_term)(),
         bt.algos.SelectAll(),
         SelectRelativeMomentum(
             n=n,
@@ -150,6 +157,7 @@ def dual_momentum_strategy(
     name,
     n=1,
     alternative_n=1,
+    run_term="monthly",
     lookbacks=[1, 3, 6],
     lookback_weights=[5, 3, 2],
     assets=[],
@@ -167,7 +175,7 @@ def dual_momentum_strategy(
     #     layer.append(bt.algos.PrintDate())
 
     layer = layer + [
-        bt.algos.RunMonthly(),
+        RUN_TERM.get(run_term)(),
         bt.algos.SelectAll(),
         SelectDualMomentum(
             n=n,

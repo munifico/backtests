@@ -12,8 +12,8 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 #########################################
 
 # %%
-# d = bt.get(["spy", "agg"], start="2010-01-01")
-# 'Adj Close'를 이용하여 가격 조정
+#########################################
+
 portfolios = [
     {
         "name": "SPY/TLT",
@@ -55,7 +55,7 @@ benchmarks = [
 ]
 
 lookbacks = [1, 3, 6]  # Month
-lookback_weights = [5, 3, 2]  # Ratio
+lookback_weights = [1, 1, 1]  # Ratio
 
 start_trading_date = "2000-01-01"
 end_trading_date = "2021-12-12"
