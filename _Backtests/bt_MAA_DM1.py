@@ -42,6 +42,31 @@ portfolios = [
         "in_market": ["VWO"],
         "out_market": ["TIP"]
     },
+    {
+        "name": "SPY+T/BIL",
+        "in_market": ["SPY", "TLT"],
+        "out_market": ["BIL"]
+    },
+    {
+        "name": "QQQ+T/BIL",
+        "in_market": ["QQQ", "TLT"],
+        "out_market": ["BIL"]
+    },
+    {
+        "name": "VWO+T/BIL",
+        "in_market": ["VWO", "TLT"],
+        "out_market": ["BIL"]
+    },
+    {
+        "name": "S+Q+V/TLT",
+        "in_market": ["SPY", "QQQ", "VWO"],
+        "out_market": ["TLT"]
+    },
+    {
+        "name": "S+Q+V+T/BIL",
+        "in_market": ["SPY", "QQQ", "VWO", "TLT"],
+        "out_market": ["BIL"]
+    },
 ]
 
 benchmarks = [
