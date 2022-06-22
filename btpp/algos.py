@@ -37,16 +37,16 @@ class StatMomentumReturn(bt.Algo):
     def __call__(self, target):
 
         selected = target.temp["selected"]
+        # init stat
+        stat = target.universe.loc[target.now, selected] * 0
 
         for i, lookback in enumerate(self.lookbacks):
             t0 = target.now - self.lag
             prc = target.universe.loc[(t0 - lookback): t0, selected]
-            stat = prc.calc_total_return() * self.lookback_weights[i]
+            _stat = prc.calc_total_return() * self.lookback_weights[i]
+            stat = stat + _stat
 
-            if "stat" in target.temp:
-                target.temp["stat"] = target.temp["stat"] + stat
-            else:
-                target.temp["stat"] = stat
+        target.temp["stat"] = stat
 
         return True
 
