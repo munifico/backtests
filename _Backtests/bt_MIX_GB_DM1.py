@@ -6,53 +6,58 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 %matplotlib inline
 
 #########################################
-# Code For Dual Momentum Strategy(DM)
+# Code For Mixture Strategy (M)
+# [DAA 응용] GB 전략 안에서 2가지 자산을 모멘텀을 바탕으로 투자했을 때
 #########################################
 
 # %%
 # d = bt.get(["spy", "agg"], start="2010-01-01")
 # 'Adj Close'를 이용하여 가격 조정
-portfolios_maa = [
+portfolios = [
     {
-        "name": "@SPY/TLT",
-        "in_market": ["SPY"],
-        "out_market": ["TLT"]
+        "name": "QQQ/TLT",
+        "weight": {"SAA": 0.6, "MAA": 0.4},
+        "MAA": {
+            "in_market": ["QQQ"],
+            "out_market": ["TLT"]
+        },
+        "SAA": {
+            "weight": {"GLD": 0.34, "SPY": 0.33, "SHY": 0.33}
+        }
     },
     {
-        "name": "@QQQ/TLT",
-        "in_market": ["QQQ"],
-        "out_market": ["TLT"]
+        "name": "SPY/TLT",
+        "weight": {"SAA": 0.6, "MAA": 0.4},
+        "MAA": {
+            "in_market": ["SPY"],
+            "out_market": ["TLT"]
+        },
+        "SAA": {
+            "weight": {"GLD": 0.34, "QQQ": 0.33, "SHY": 0.33}
+        }
     },
     {
-        "name": "@SPY/SHY",
-        "in_market": ["SPY"],
-        "out_market": ["SHY"]
+        "name": "QQQ/SHY",
+        "weight": {"SAA": 0.6, "MAA": 0.4},
+        "MAA": {
+            "in_market": ["QQQ"],
+            "out_market": ["SHY"]
+        },
+        "SAA": {
+            "weight": {"GLD": 0.34, "SPY": 0.33, "TLT": 0.33}
+        }
     },
     {
-        "name": "@QQQ/SHY",
-        "in_market": ["QQQ"],
-        "out_market": ["SHY"]
+        "name": "SPY/SHY",
+        "weight": {"SAA": 0.6, "MAA": 0.4},
+        "MAA": {
+            "in_market": ["SPY"],
+            "out_market": ["SHY"]
+        },
+        "SAA": {
+            "weight": {"GLD": 0.34, "QQQ": 0.33, "TLT": 0.33}
+        }
     }
-]
-
-portfolios_saa = [
-    {
-        "name": "@QQQ+SHY",
-        "weight": {"GLD": 0.34, "QQQ": 0.33, "SHY": 0.33}
-    },
-    {
-        "name": "@SPY+SHY",
-        "weight": {"GLD": 0.34, "SPY": 0.33, "SHY": 0.33}
-    },
-    {
-        "name": "@QQQ+TLT",
-        "weight": {"GLD": 0.34, "QQQ": 0.33, "TLT": 0.33}
-    },
-    {
-        "name": "@SPY+TLT",
-        "weight": {"GLD": 0.34, "SPY": 0.33, "TLT": 0.33}
-    }
-
 ]
 
 # Golden Butterfly
@@ -64,7 +69,7 @@ benchmarks = [
 ]
 
 lookbacks = [1, 3, 6]  # Month
-lookback_weights = [5, 3, 2]  # Ratio
+lookback_weights = [1, 1, 1]  # Ratio
 # lookback_weights = [1, 1, 1]  # Ratio
 
 start_trading_date = "2000-01-01"
@@ -72,8 +77,8 @@ end_trading_date = "2021-12-12"
 #########################################
 
 # %%
-tickers_in_market = sum([p["in_market"] for p in portfolios_maa], [])
-tickers_out_market = sum([p["out_market"] for p in portfolios_maa], [])
+tickers_in_market = sum([p["MAA"]["in_market"] for p in portfolios], [])
+tickers_out_market = sum([p["MAA"]["out_market"] for p in portfolios], [])
 tickers_benchmark = sum([list(it["weight"].keys())
                         for it in benchmarks], [])
 
@@ -117,48 +122,47 @@ benchmark_strategys = [
 benchmark_tests = [bt.Backtest(s, d) for s in benchmark_strategys]
 # %%
 # 종목을 바꾸어가며 듀얼 모멘텀 테스트
-strategys_maa = [
-    dual_momentum_strategy(
-        pf["name"],
+
+strategys = []
+
+for pf in portfolios:
+
+    parent_layer = [
+        bt.algos.RunMonthly(),
+        bt.algos.SelectAll(),
+        bt.algos.SelectThese(["SAA", "MAA"]),
+        bt.algos.WeighSpecified(**pf["weight"]),
+        bt.algos.Rebalance(),
+        bt.algos.PrintInfo(
+            '{name}:{now}. Value:{_value:0.0f}, Price:{_price:0.4f}'
+        ),
+        bt.algos.PrintTempData()
+    ]
+
+    saa_st = saa_weight_strategy(
+        "SAA",
+        assets_with_weight=pf["SAA"]["weight"],
+        run_term="monthly",
+        start_trading_date=real_start_trading_date
+    )
+
+    maa_st = dual_momentum_strategy(
+        "MAA",
         n=1,
         alternative_n=1,
         lookbacks=lookbacks,
         lookback_weights=lookback_weights,
-        assets=pf["in_market"],
-        alternative_assets=pf["out_market"],
+        assets=pf["MAA"]["in_market"],
+        alternative_assets=pf["MAA"]["out_market"],
         all_or_none=False,
         start_trading_date=real_start_trading_date
-    ) for pf in portfolios_maa
-]
+    )
 
-strategys_saa = [
-    saa_weight_strategy(
-        pf["name"],
-        assets_with_weight=pf["weight"],
-        run_term="monthly",
-        start_trading_date=real_start_trading_date
-    ) for pf in portfolios_saa
-]
+    parent_st = bt.Strategy(pf["name"], parent_layer, [saa_st, maa_st])
 
-layer = [
-    bt.algos.RunMonthly(),
-    bt.algos.SelectAll(),
-    bt.algos.SelectRegex("@"),
-    bt.algos.WeighEqually(),
-    bt.algos.Rebalance(),
-    bt.algos.PrintInfo(
-        '{name}:{now}. Value:{_value:0.0f}, Price:{_price:0.4f}'
-    ),
-    bt.algos.PrintTempData()
-]
+    strategys.append(parent_st)
 
-strategy_parent_name = ["s1", "s2", "s3", "s4"]
-strategy_parent = []
-for i, e in enumerate(strategy_parent_name):
-    strategy_parent.append(bt.Strategy(
-        e, layer, [strategys_saa[i], strategys_maa[i]]))
-
-tests = [bt.Backtest(s, d) for s in strategy_parent]
+tests = [bt.Backtest(s, d) for s in strategys]
 
 # %%
 # res = bt.run(*benchmark_tests, *tests)
