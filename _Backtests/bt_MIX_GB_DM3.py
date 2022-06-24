@@ -14,12 +14,12 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 # d = bt.get(["spy", "agg"], start="2010-01-01")
 # 'Adj Close'를 이용하여 가격 조정
 
-gb = {"GLD": 0.2}
+gb = {"GLD": 0.2, "QQQ": 0.2, "SPY": 0.2, "SHY": 0.2, "TLT": 0.2}
 
 portfolios = [
     {
-        "name": "Q1",
-        "weight": {"SAA": 0.2, "MAA": 0.8},
+        "name": "Q55",
+        "weight": {"SAA": 0.5, "MAA": 0.5},
         "MAA": {
             "in_market": ["QQQ"],
             "out_market": ["TLT"]
@@ -29,10 +29,10 @@ portfolios = [
         }
     },
     {
-        "name": "Q2",
-        "weight": {"SAA": 0.2, "MAA": 0.8},
+        "name": "Q64",
+        "weight": {"SAA": 0.6, "MAA": 0.4},
         "MAA": {
-            "in_market": ["SPY", "QQQ"],
+            "in_market": ["QQQ"],
             "out_market": ["TLT"]
         },
         "SAA": {
@@ -40,21 +40,21 @@ portfolios = [
         }
     },
     {
-        "name": "Q3",
-        "weight": {"SAA": 0.2, "MAA": 0.8},
+        "name": "Q46",
+        "weight": {"SAA": 0.4, "MAA": 0.6},
+        "MAA": {
+            "in_market": ["QQQ"],
+            "out_market": ["TLT"]
+        },
+        "SAA": {
+            "weight": gb
+        }
+    },
+    {
+        "name": "QSV55",
+        "weight": {"SAA": 0.5, "MAA": 0.5},
         "MAA": {
             "in_market": ["QQQ", "SPY", "VWO"],
-            "out_market": ["TLT"]
-        },
-        "SAA": {
-            "weight": gb
-        }
-    },
-    {
-        "name": "Q4",
-        "weight": {"SAA": 0.2, "MAA": 0.8},
-        "MAA": {
-            "in_market": ["QQQ", "SPY", "VWO", "IWS"],
             "out_market": ["TLT"]
         },
         "SAA": {

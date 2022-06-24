@@ -86,7 +86,6 @@ benchmarks = [
 
 lookbacks = [1, 3, 6]  # Month
 lookback_weights = [1, 1, 1]  # Ratio
-# lookback_weights = [1, 1, 1]  # Ratio
 
 start_trading_date = "2000-01-01"
 end_trading_date = "2021-12-12"

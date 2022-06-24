@@ -2,6 +2,7 @@
 import pandas as pd
 import yfinance as yf
 import bt
+from datetime import datetime, date, timedelta
 from btpp.strategy import dual_momentum_strategy, saa_weight_strategy
 from btpp.helper import get_start_date_off, get_real_start_trading_date
 %matplotlib inline
@@ -17,60 +18,40 @@ portfolios = [
     {
         "name": "SPY/TLT",
         "in_market": ["SPY"],
-        "out_market": ["TLT", "SHY", "BIL"]
+        "out_market": ["TLT"]
     },
     {
         "name": "QQQ/TLT",
         "in_market": ["QQQ"],
-        "out_market": ["TLT", "SHY", "BIL"]
+        "out_market": ["TLT"]
     },
     {
-        "name": "S;V/TLT",
-        "in_market": ["SPY", "VWO"],
-        "out_market": ["TLT", "SHY", "BIL"]
+        "name": "K200/TLT",    # TIGER 200
+        "in_market": ["102110.KS"],
+        "out_market": ["TLT"]
     },
     {
-        "name": "S;Q/TLT",
-        "in_market": ["SPY", "QQQ"],
-        "out_market": ["TLT", "SHY", "BIL"]
+        "name": "S|K/TLT",
+        "in_market": ["SPY", "102110.KS"],
+        "out_market": ["TLT"]
     },
     {
-        "name": "S;I/TLT",
-        "in_market": ["SPY", "IWS"],
-        "out_market": ["TLT", "SHY", "BIL"]
+        "name": "Q|K/TLT",
+        "in_market": ["QQQ", "102110.KS"],
+        "out_market": ["TLT"]
     },
     {
-        "name": "S;V;Q/TLT",
-        "in_market": ["SPY", "VWO", "QQQ"],
-        "out_market": ["TLT", "SHY", "BIL"]
-    },
-    {
-        "name": "S;V;I/TLT",
-        "in_market": ["SPY", "VWO", "IWS"],
-        "out_market": ["TLT", "SHY", "BIL"]
-    },
-    {
-        "name": "S;Q;V;I/TLT",
-        "in_market": ["SPY", "QQQ", "VWO", "IWS"],
-        "out_market": ["TLT", "SHY", "BIL"]
-    },
-    {
-        "name": "S;Q;V;I;I/TLT",
-        "in_market": ["SPY", "QQQ", "VWO", "IWS", "IJH"],
-        "out_market": ["TLT", "SHY", "BIL"]
-    },
-    {
-        "name": "S;Q;V;TIP/TLT",
-        "in_market": ["SPY", "QQQ", "VWO"],
-        "out_market": ["TLT", "SHY", "BIL"]
-    },
+        "name": "S|Q|K/TLT",
+        "in_market": ["SPY", "QQQ", "102110.KS"],
+        "out_market": ["TLT"]
+    }
 ]
 
 benchmarks = [
     {
-        "name": "SPY+QQQ+VWO",
-        "weight": {"SPY": 0.34, "QQQ": 0.33, "VWO": 0.33}
-    }
+        "name": "SPY+QQQ+K",
+        "weight": {"SPY": 0.34, "QQQ": 0.33, "102110.KS": 0.33}
+    },
 ]
 
 lookbacks = [1, 3, 6]  # Month
@@ -98,8 +79,6 @@ start_date_off = get_start_date_off(
 print(start_date_off)
 
 # %%
-# d = bt.get(["spy", "agg"], start="2010-01-01")
-# 'Adj Close'를 이용하여 가격 조정
 _d = yf.download(tickers_all, start=start_date_off, end=end_trading_date)
 d = _d['Adj Close'].dropna()
 print(d.head())
@@ -139,8 +118,8 @@ strategys = [
 tests = [bt.Backtest(s, d) for s in strategys]
 
 # %%
+# res = bt.run(*benchmark_tests, *tests)
 res = bt.run(*benchmark_tests, *tests)
-# res = bt.run(*tests)
 
 # %%
 res.display()
