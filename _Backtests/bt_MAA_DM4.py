@@ -50,7 +50,7 @@ portfolios = [
 benchmarks = [
     {
         "name": "SPY+QQQ+K",
-        "weight": {"SPY": 0.34, "QQQ": 0.33, "102110.KS": 0.33}
+        "weight": {"SPY": 0.34, "QQQ": 0.33, "TLT": 0.33}
     },
 ]
 

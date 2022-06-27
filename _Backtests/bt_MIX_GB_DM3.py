@@ -51,6 +51,17 @@ portfolios = [
         }
     },
     {
+        "name": "QS55",
+        "weight": {"SAA": 0.5, "MAA": 0.5},
+        "MAA": {
+            "in_market": ["SPY", "QQQ"],
+            "out_market": ["TLT"]
+        },
+        "SAA": {
+            "weight": gb
+        }
+    },
+    {
         "name": "QSV55",
         "weight": {"SAA": 0.5, "MAA": 0.5},
         "MAA": {
@@ -72,7 +83,7 @@ benchmarks = [
 ]
 
 lookbacks = [1, 3, 6]  # Month
-lookback_weights = [1, 1, 1]  # Ratio
+lookback_weights = [5, 3, 1]  # Ratio
 # lookback_weights = [1, 1, 1]  # Ratio
 
 start_trading_date = "2000-01-01"

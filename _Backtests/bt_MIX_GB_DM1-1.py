@@ -16,47 +16,35 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 portfolios = [
     {
         "name": "QQQ/TLT",
-        "weight": {"SAA": 0.6, "MAA": 0.4},
+        "weight": {"MAA": 0.4, "GLD": 0.2, "SPY": 0.2, "SHY": 0.2},
         "MAA": {
             "in_market": ["QQQ"],
             "out_market": ["TLT"]
-        },
-        "SAA": {
-            "weight": {"GLD": 0.34, "SPY": 0.33, "SHY": 0.33}
         }
     },
     {
         "name": "SPY/TLT",
-        "weight": {"SAA": 0.6, "MAA": 0.4},
+        "weight": {"MAA": 0.4, "GLD": 0.2, "QQQ": 0.2, "SHY": 0.2},
         "MAA": {
             "in_market": ["SPY"],
             "out_market": ["TLT"]
         },
-        "SAA": {
-            "weight": {"GLD": 0.34, "QQQ": 0.33, "SHY": 0.33}
-        }
     },
     {
         "name": "QQQ/SHY",
-        "weight": {"SAA": 0.6, "MAA": 0.4},
+        "weight": {"MAA": 0.4, "GLD": 0.2, "SPY": 0.2, "TLT": 0.2},
         "MAA": {
             "in_market": ["QQQ"],
             "out_market": ["SHY"]
         },
-        "SAA": {
-            "weight": {"GLD": 0.34, "SPY": 0.33, "TLT": 0.33}
-        }
     },
     {
         "name": "SPY/SHY",
-        "weight": {"SAA": 0.6, "MAA": 0.4},
+        "weight": {"MAA": 0.4, "GLD": 0.2, "QQQ": 0.2, "TLT": 0.2},
         "MAA": {
             "in_market": ["SPY"],
             "out_market": ["SHY"]
         },
-        "SAA": {
-            "weight": {"GLD": 0.34, "QQQ": 0.33, "TLT": 0.33}
-        }
     }
 ]
 
@@ -130,7 +118,7 @@ for pf in portfolios:
     parent_layer = [
         bt.algos.RunMonthly(),
         bt.algos.SelectAll(),
-        bt.algos.SelectThese(["SAA", "MAA"]),
+        # bt.algos.SelectThese(["SAA", "MAA"]),
         bt.algos.WeighSpecified(**pf["weight"]),
         bt.algos.Rebalance(),
         bt.algos.PrintInfo(
@@ -138,13 +126,6 @@ for pf in portfolios:
         ),
         bt.algos.PrintTempData()
     ]
-
-    saa_st = saa_weight_strategy(
-        "SAA",
-        assets_with_weight=pf["SAA"]["weight"],
-        run_term="monthly",
-        start_trading_date=real_start_trading_date
-    )
 
     maa_st = dual_momentum_strategy(
         "MAA",
@@ -158,7 +139,7 @@ for pf in portfolios:
         start_trading_date=real_start_trading_date
     )
 
-    parent_st = bt.Strategy(pf["name"], parent_layer, [saa_st, maa_st])
+    parent_st = bt.Strategy(pf["name"], parent_layer, [maa_st])
 
     strategys.append(parent_st)
 
