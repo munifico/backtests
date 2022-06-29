@@ -12,7 +12,7 @@ DEFAULT = {
         pd.DateOffset(months=6),
         pd.DateOffset(months=12)
     ],
-    "lookback_weights": [1, 1, 1, 0],
+    "lookback_weights": [5, 3, 2, 0],
     "lag": pd.DateOffset(days=0),
 }
 
@@ -46,7 +46,7 @@ class StatMomentumReturn(bt.Algo):
             _stat = prc.calc_total_return() * self.lookback_weights[i]
             stat = stat + _stat
 
-        target.temp["stat"] = stat
+        target.temp["stat"] = stat / sum(self.lookback_weights)
 
         return True
 
@@ -260,3 +260,14 @@ class SelectDualMomentum(bt.AlgoStack):
                 all_or_none=all_or_none
             ),
         )
+
+
+class WeighFunctionally(bt.Algo):
+
+    def __init__(self, fn):
+        super(WeighFunctionally, self).__init__()
+        self.fn = fn
+
+    def __call__(self, target):
+        target.temp["weights"] = self.fn(target)
+        return True
