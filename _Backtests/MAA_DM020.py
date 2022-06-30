@@ -15,13 +15,18 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 
 portfolios = [
     {
-        "name": "SPY/TLT",
+        "name": "S/TLT",
         "in_market": ["SPY"],
         "out_market": ["TLT"]
     },
     {
-        "name": "QQQ/TLT",
+        "name": "Q/TLT",
         "in_market": ["QQQ"],
+        "out_market": ["TLT"]
+    },
+    {
+        "name": "S;Q/TLT",
+        "in_market": ["SPY", "QQQ"],
         "out_market": ["TLT"]
     },
     {
@@ -30,8 +35,13 @@ portfolios = [
         "out_market": ["TLT"]
     },
     {
-        "name": "S;Q/TLT",
-        "in_market": ["SPY", "QQQ"],
+        "name": "Q;V/TLT",
+        "in_market": ["QQQ", "VWO"],
+        "out_market": ["TLT"]
+    },
+    {
+        "name": "Q;VB/TLT",
+        "in_market": ["QQQ", "TBF"],
         "out_market": ["TLT"]
     },
     {

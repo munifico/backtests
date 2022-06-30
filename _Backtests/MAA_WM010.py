@@ -3,7 +3,7 @@ import yfinance as yf
 import bt
 from btpp.strategy import saa_weight_strategy, weight_momentum_strategy
 from btpp.helper import get_start_date_off, get_real_start_trading_date
-# %matplotlib inline
+%matplotlib inline
 
 #########################################
 # Code For Weight Momentum Strategy(WM)
@@ -14,32 +14,52 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 #########################################
 portfolios = [
     {
-        "name": "S0",
+        "name": "S031",
         "in_market": ["QQQ", "VWO", "TLT"],
         "out_market": ["BIL"]
     },
     {
-        "name": "S1",
+        "name": "S032",
+        "in_market": ["QQQ", "VWO", "TBF"],
+        "out_market": ["BIL"]
+    },
+    {
+        "name": "S041",
+        "in_market": ["QQQ", "VWO", "TLT", "TBF"],
+        "out_market": ["BIL"]
+    },
+    {
+        "name": "S042",
+        "in_market": ["QQQ", "VWO", "VNQ", "TLT"],
+        "out_market": ["BIL"]
+    },
+    {
+        "name": "S043",
         "in_market": ["SPY", "QQQ", "VWO", "TLT"],
         "out_market": ["BIL"]
     },
     {
-        "name": "S2",
-        "in_market": ["SPY", "QQQ", "VEA", "VWO", "TLT", "TIP"],
+        "name": "S051",
+        "in_market": ["SPY", "QQQ", "VWO", "TLT", "TBF"],
         "out_market": ["BIL"]
     },
     {
-        "name": "S3",
+        "name": "S052",
         "in_market": ["SPY", "IWM", "EFA", "EEM", "VNQ"],
         "out_market": ["BIL"]
     },
     {
-        "name": "S4",
+        "name": "S061",
+        "in_market": ["SPY", "QQQ", "VEA", "VWO", "TLT", "TIP"],
+        "out_market": ["BIL"]
+    },
+    {
+        "name": "S09",
         "in_market": ["VT", "SPY", "IWM", "EFA", "EEM", "VNQ", "TLT", "TIP", "BIL"],
         "out_market": ["BIL"]
     },
     {
-        "name": "S5",
+        "name": "S10",
         "in_market": ["VT", "SPY", "QQQ", "IWM", "EVA", "VWO", "EFA", "EEM", "VNQ", "TLT"],
         "out_market": ["BIL"]
     }
@@ -58,6 +78,10 @@ benchmarks = [
         "name": "VWO",
         "weight": {"VWO": 1}
     },
+    {
+        "name": "SPY+QQQ+VWO",
+        "weight": {"SPY": 0.34, "QQQ": 0.33, "VWO": 0.33}
+    }
 ]
 
 lookbacks = [1, 3, 6]  # Month
