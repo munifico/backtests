@@ -1,13 +1,14 @@
 # %%
 import yfinance as yf
 import bt
-from btpp.strategy import saa_weight_strategy, momentum_weight_strategy
+import pandas as pd
+from btpp.strategy import saa_weight_strategy, saa_with_momentum_weight_strategy
 from btpp.helper import get_start_date_off, get_real_start_trading_date
 %matplotlib inline
 
 #########################################
-# Code For Weight Momentum Strategy(WM)
-# 모멘텀이 0 이상인 자산만 골라, 모멘텀 비율대로 투자 비중 조정하기
+# Code For SAA with Weight Momentum Strategy(WWM)
+# 기존 SAA 전략에 가중치 주기. 모멘텀이 0 이상인 자산만 골라, 모멘텀 비율대로 투자 비중 조정하기
 #########################################
 
 # %%
@@ -15,54 +16,30 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 portfolios = [
     {
         "name": "S031",
-        "in_market": ["QQQ", "VWO", "TLT"],
+        "weight": {"QQQ": 0.34, "VWO": 0.33, "TLT": 0.33},
         "out_market": ["BIL"]
     },
     {
-        "name": "S032",
-        "in_market": ["QQQ", "VWO", "TBF"],
+        "name": "GB-W1",
+        "weight": {"SPY": 0.2, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.2, "SHY": 0.2},
         "out_market": ["BIL"]
     },
     {
-        "name": "S041",
-        "in_market": ["QQQ", "VWO", "TLT", "TBF"],
+        "name": "GB-W2",
+        "weight": {"SPY": 0.1, "VT": 0.1, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.2, "SHY": 0.2},
         "out_market": ["BIL"]
     },
     {
-        "name": "S042",
-        "in_market": ["QQQ", "VWO", "VNQ", "TLT"],
+        "name": "GB-W3",
+        "weight": {"SPY": 0.1, "VT": 0.1, "QQQ": 0.1, "VWO": 0.1, "GLD": 0.2, "TLT": 0.2, "SHY": 0.2},
         "out_market": ["BIL"]
     },
     {
-        "name": "S043",
-        "in_market": ["SPY", "QQQ", "VWO", "TLT"],
+        "name": "GB-W4",
+        "weight": {"SPY": 0.1, "VT": 0.1, "QQQ": 0.1, "VWO": 0.1, "GLD": 0.1, "TIP": 0.1, "TLT": 0.2, "SHY": 0.2},
         "out_market": ["BIL"]
     },
-    {
-        "name": "S051",
-        "in_market": ["SPY", "QQQ", "VWO", "TLT", "TBF"],
-        "out_market": ["BIL"]
-    },
-    {
-        "name": "S052",
-        "in_market": ["SPY", "IWM", "EFA", "EEM", "VNQ"],
-        "out_market": ["BIL"]
-    },
-    {
-        "name": "S061",
-        "in_market": ["SPY", "QQQ", "VEA", "VWO", "TLT", "TIP"],
-        "out_market": ["BIL"]
-    },
-    {
-        "name": "S09",
-        "in_market": ["VT", "SPY", "IWM", "EFA", "EEM", "VNQ", "TLT", "TIP", "BIL"],
-        "out_market": ["BIL"]
-    },
-    {
-        "name": "S10",
-        "in_market": ["VT", "SPY", "QQQ", "IWM", "EVA", "VWO", "EFA", "EEM", "VNQ", "TLT"],
-        "out_market": ["BIL"]
-    }
+
 ]
 
 benchmarks = [
@@ -75,12 +52,8 @@ benchmarks = [
         "weight": {"QQQ": 1}
     },
     {
-        "name": "VWO",
-        "weight": {"VWO": 1}
-    },
-    {
-        "name": "SPY+QQQ+VWO",
-        "weight": {"SPY": 0.34, "QQQ": 0.33, "VWO": 0.33}
+        "name": "GB",
+        "weight": {"SPY": 0.2, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.2, "SHY": 0.2},
     }
 ]
 
@@ -92,7 +65,7 @@ end_trading_date = "2021-12-12"
 #########################################
 
 # %%
-tickers_in_market = sum([p["in_market"] for p in portfolios], [])
+tickers_in_market = sum([list(p["weight"].keys()) for p in portfolios], [])
 tickers_out_market = sum([p["out_market"] for p in portfolios], [])
 tickers_benchmark = sum([list(it["weight"].keys()) for it in benchmarks], [])
 
@@ -137,25 +110,28 @@ benchmark_tests = [bt.Backtest(s, d) for s in benchmark_strategys]
 
 def weight_from_momentum(target):
     # momentum
-    stat = target.temp['stat'].copy()
-    stat[stat < 0] = 0
-    s = stat.sum()
+    _stat = target.temp['stat'].copy()
+    _weights = pd.Series(target.temp['weights'])
+    _stat[_stat < 0] = 0
+    stat = _stat[_weights.index]
+    weights = _weights * stat
+    s = weights.sum()
     if s == 0:
         return {}
     else:
-        weights = (stat / s).to_dict()
+        weights = (weights / s).to_dict()
         return weights
 
 
 strategys = [
-    momentum_weight_strategy(
+    saa_with_momentum_weight_strategy(
         pf["name"],
         weight_from_momentum,
         # n=1,
         # alternative_n=1,
+        assets_with_weight=pf["weight"],
         lookbacks=lookbacks,
         lookback_weights=lookback_weights,
-        assets=pf["in_market"],
         # alternative_assets=pf["out_market"],
         # all_or_none=False,
         start_trading_date=real_start_trading_date

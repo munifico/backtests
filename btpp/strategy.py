@@ -215,8 +215,9 @@ def dual_momentum_strategy(
 # 우선, 모멘텀을 구하고, 0 이상인 자산만을 선택한 뒤, 모멘텀 비중에 따라 투자 비중(weight)을 조정하여 적용하자.
 # 모든 자산의 모멘텀이 0보자 작다면 대안 자산에 투자하자.
 
-def weight_momentum_strategy(
+def momentum_weight_strategy(
     name,
+    weight_fn,
     # n=1,
     # alternative_n=1,
     run_term="monthly",
@@ -243,7 +244,51 @@ def weight_momentum_strategy(
             lookbacks=[pd.DateOffset(months=e) for e in lookbacks],
             lookback_weights=lookback_weights
         ),
-        WeighFunctionally(weight_from_momentum),
+        WeighFunctionally(weight_fn),
+        bt.algos.Rebalance(),
+    ]
+
+    if verbose is True:
+        layer.append(bt.algos.PrintInfo(
+            '{name}:{now}. Value:{_value:0.0f}, Price:{_price:0.4f}'
+        ))
+        layer.append(bt.algos.PrintTempData())
+
+    return bt.Strategy(name, layer)
+
+
+def saa_with_momentum_weight_strategy(
+    name,
+    weight_fn,
+    # n=1,
+    # alternative_n=1,
+    assets_with_weight={},
+    run_term="monthly",
+    lookbacks=[1, 3, 6],
+    lookback_weights=[5, 3, 2],
+    # assets=[],
+    # alternative_assets=[],
+    # all_or_none=False,
+    start_trading_date=None,
+    verbose=True
+):
+
+    layer = []
+    if start_trading_date is not None:
+        layer.append(bt.algos.RunAfterDate(start_trading_date))
+
+    # if verbose is True:
+    #     layer.append(bt.algos.PrintDate())
+
+    layer = layer + [
+        RUN_TERM.get(run_term)(),
+        bt.algos.SelectAll(),
+        bt.algos.WeighSpecified(**assets_with_weight),
+        StatMomentumReturn(
+            lookbacks=[pd.DateOffset(months=e) for e in lookbacks],
+            lookback_weights=lookback_weights
+        ),
+        WeighFunctionally(weight_fn),
         bt.algos.Rebalance(),
     ]
 
@@ -256,13 +301,3 @@ def weight_momentum_strategy(
     return bt.Strategy(name, layer)
 
 ###################################################################################
-
-
-def weight_from_momentum(target):
-    # momentum
-    stat = target.temp['stat']
-    good_stat = stat[stat > 0]
-    s = good_stat.sum()
-    stat_ratio = good_stat / s
-    weight = stat_ratio.to_dict()
-    return weight
