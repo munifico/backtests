@@ -271,3 +271,43 @@ class WeighFunctionally(bt.Algo):
     def __call__(self, target):
         target.temp["weights"] = self.fn(target)
         return True
+
+
+#########################################################
+# Weights
+#########################################################
+
+class WeighFunctionally(bt.Algo):
+
+    def __init__(self, fn):
+        super(WeighFunctionally, self).__init__()
+        self.fn = fn
+
+    def __call__(self, target):
+        target.temp["weights"] = self.fn(target)
+        return True
+
+
+class WeighSpecifiedMonthly(bt.Algo):
+
+    weights_with_months = [
+        {
+            "weights": {},
+            "months": [11, 12, 1, 2, 3, 4]
+        },
+        {
+            "weights": {},
+            "months": [5, 6, 7, 8, 9, 10]
+        },
+    ]
+
+    def __init__(self, weights_with_months):
+        super(WeighSpecifiedMonthly, self).__init__()
+        self.wm = weights_with_months
+
+    def __call__(self, target):
+        for it in self.wm:
+            if target.now.month in it["months"]:
+                target.temp["weights"] = it["weights"].copy()
+
+        return True
