@@ -54,6 +54,8 @@ class StatMomentumReturn(bt.Algo):
 # Class for tmep["selected"]
 ###########################################
 
+# temp['stat']을 기준으로 상위 n개 선택
+
 
 class SelectAssets(bt.Algo):
 
@@ -260,17 +262,6 @@ class SelectDualMomentum(bt.AlgoStack):
                 all_or_none=all_or_none
             ),
         )
-
-
-class WeighFunctionally(bt.Algo):
-
-    def __init__(self, fn):
-        super(WeighFunctionally, self).__init__()
-        self.fn = fn
-
-    def __call__(self, target):
-        target.temp["weights"] = self.fn(target)
-        return True
 
 
 #########################################################

@@ -54,7 +54,7 @@ portfolios = [
 ]
 
 start_trading_date = "2000-01-01"
-end_trading_date = "2021-12-12"
+end_trading_date = "2019-12-12"
 #########################################
 
 # %%
