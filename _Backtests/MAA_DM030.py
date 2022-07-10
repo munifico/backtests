@@ -25,18 +25,48 @@ portfolios = [
         "out_market": ["TLT", "SHY", "BIL"]
     },
     {
-        "name": "S;V/TLT",
-        "in_market": ["SPY", "VWO"],
-        "out_market": ["TLT", "SHY", "BIL"]
-    },
-    {
         "name": "S;Q/TLT",
         "in_market": ["SPY", "QQQ"],
         "out_market": ["TLT", "SHY", "BIL"]
     },
     {
+        "name": "S;Vw/TLT",
+        "in_market": ["SPY", "VWO"],
+        "out_market": ["TLT", "SHY", "BIL"]
+    },
+    {
+        "name": "S;Sc/TLT",
+        "in_market": ["SPY", "SCZ"],
+        "out_market": ["TLT", "SHY", "BIL"]
+    },
+    {
+        "name": "S;Vs/TLT",
+        "in_market": ["SPY", "VSS"],
+        "out_market": ["TLT", "SHY", "BIL"]
+    },
+    {
+        "name": "S;Vs/TLT2",
+        "in_market": ["SPY", "VSS"],
+        "out_market": ["TLT"]
+    },
+    {
+        "name": "S;Ve/TLT",
+        "in_market": ["SPY", "VEU"],
+        "out_market": ["TLT", "SHY", "BIL"]
+    },
+    {
         "name": "S;I/TLT",
         "in_market": ["SPY", "IWS"],
+        "out_market": ["TLT", "SHY", "BIL"]
+    },
+    {
+        "name": "S;Vo/TLT",
+        "in_market": ["SPY", "VO"],
+        "out_market": ["TLT", "SHY", "BIL"]
+    },
+    {
+        "name": "S;J/TLT",
+        "in_market": ["SPY", "IJH"],
         "out_market": ["TLT", "SHY", "BIL"]
     },
     {
