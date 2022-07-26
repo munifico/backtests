@@ -3,16 +3,16 @@ import yfinance as yf
 import bt
 import pandas as pd
 from btpp.algos import WeighFunctionally
-from btpp.strategy import saa_weight_strategy, saa_with_momentum_weight_strategy
+from btpp.strategy import dual_momentum_strategy, saa_weight_strategy, saa_with_momentum_weight_strategy
 from btpp.helper import get_start_date_off, get_real_start_trading_date
 # %matplotlib inline
 
 #########################################
 # Code For Custom Momentum Strategy(CM)
-# 여러가지 대표 종목 선정 ( 약 12가지 )
-# * 지난 1, 2,  3 ...  12개월 모멘텀 최대 종목 각각 1개씩(총 12개)
-# * 이들 각 종목에 투자금 1/12 씩 투자.  (중복 포함)
-# * 단, 모멘텀 0 이하인 경우 대신 현금 보유
+# 여러가지 대표 종목 선정
+# * 자산군으로 묶음 ( 주식 40%, 채권 40%, 원자재 20% )
+# * 각 자산군에서 모멘텀이 가장 높은 종목에 투자.
+# * 단, 모멘텀이 0 이하인 경우 대신 현금(혹은 단기채권) 보유
 # * 매월 리벨런싱
 #########################################
 
@@ -20,31 +20,49 @@ from btpp.helper import get_start_date_off, get_real_start_trading_date
 #########################################
 portfolios = [
     {
-        "name": "S01",
-        "in_market": ["SPY", "QQQ", "VEA", "VWO", "VSS", "AGG", "TLT", "SHY", "TIP", "IEF"],
-        "out_market": ["BIL"]
+        "name": "주식A",
+        "in_market": ["SPY", "VEA", "VWO"],  # "SH"],
+        "out_market": ["BIL"],
+        "lookback_weights": [1.0, 0, 0]
     },
     {
-        "name": "S02",
-        "in_market": ["SPY", "QQQ", "VEA", "VWO"],
-        "out_market": ["BIL"]
+        "name": "주식B",
+        # "XLC", "XLU", "XLE",  "VNQ"],  # ],
+        "in_market": ["QQQ", "XLV"],  # "PSQ"],
+        "out_market": ["BIL"],
+        "lookback_weights": [1.0, 0, 0]
+    },
+    {
+        "name": "채권",
+        # "AGG", ],  # ],
+        "in_market": ["TLT", "SHY", "TIP", "IEF"],  # "TBF", "TBX"],
+        "out_market": ["BIL"],
+        "lookback_weights": [1.0, 0, 0]
+    },
+    {
+        "name": "원자재",
+        "in_market": ["GLD", "DBC", "USO"],  # "DBA", "DGZ"],
+        "out_market": ["BIL"],
+        "lookback_weights": [1.0, 0, 0]
     }
 ]
 
 benchmarks = [
-    {
-        "name": "SPY",
-        "weight": {"SPY": 1}
-    },
-    {
-        "name": "QQQ",
-        "weight": {"QQQ": 1}
-    },
+    # {
+    #     "name": "SPY",
+    #     "weight": {"SPY": 1}
+    # },
+    # {
+    #     "name": "QQQ",
+    #     "weight": {"QQQ": 1}
+    # },
     {
         "name": "GB",
         "weight": {"SPY": 0.2, "QQQ": 0.2, "GLD": 0.2, "TLT": 0.2, "SHY": 0.2},
     }
 ]
+
+lookbacks = [1, 3, 6]  # Month
 
 start_trading_date = "2000-01-01"
 end_trading_date = "2021-12-12"
@@ -62,7 +80,7 @@ print(tickers_all)
 
 # %%
 # Momentum 계산을 위해 6개월 전 데이터부터 가져옴
-month_offset = 13
+month_offset = max(lookbacks)
 start_date_off = get_start_date_off(
     start_trading_date, month_offset=month_offset)
 print(start_date_off)
@@ -90,82 +108,46 @@ print(real_start_trading_date)
 benchmark_strategys = [saa_weight_strategy(pf["name"], assets_with_weight=pf["weight"],
                                            run_term="monthly", start_trading_date=real_start_trading_date) for pf in benchmarks]
 benchmark_tests = [bt.Backtest(s, d) for s in benchmark_strategys]
+
 # %%
 # 종목을 바꾸어가며 듀얼 모멘텀 테스트
 
-
-def custom_strategy(
-    name,
-    weight_fn,
-    assets=[],
-    alternative_assets=[],
-    start_trading_date=None,
-    verbose=True
-):
-    layer = []
-    if start_trading_date is not None:
-        layer.append(bt.algos.RunAfterDate(start_trading_date))
-
-    # if verbose is True:
-    #     layer.append(bt.algos.PrintDate())
-
-    layer = layer + [
-        bt.algos.RunMonthly(),
-        bt.algos.SelectThese(list(set(assets+alternative_assets))),
-        WeighFunctionally(weight_fn),
-        bt.algos.Rebalance(),
-    ]
-
-    if verbose is True:
-        layer.append(bt.algos.PrintInfo(
-            '{name}:{now}. Value:{_value:0.0f}, Price:{_price:0.4f}'
-        ))
-        layer.append(bt.algos.PrintTempData())
-
-    return bt.Strategy(name, layer)
-
-
-def weight_from_momentum(assets, alternative_assets):
-    def inner_func(target):
-        # momentum
-        in_market = assets
-        out_market = alternative_assets[0]
-        weights = {out_market: 0}
-        for it in in_market:
-            weights[it] = 0
-
-        t0 = target.now
-        for i in range(1, 13):
-            lookback = pd.DateOffset(months=i)
-            prc = target.universe.loc[(t0 - lookback):t0, in_market]
-            _return = prc.calc_total_return()
-            maxidx = _return.idxmax()
-            maxval = _return.loc[maxidx]
-            if maxval > 0:
-                weights[maxidx] = weights[maxidx] + 1/12
-            else:
-                weights[out_market] + 1/12
-
-        return weights
-
-    return inner_func
-
-
 strategys = [
-    custom_strategy(
+    dual_momentum_strategy(
         pf["name"],
-        weight_from_momentum(pf["in_market"], pf["out_market"]),
+        n=1,
+        alternative_n=1,
+        lookbacks=lookbacks,
+        lookback_weights=pf['lookback_weights'],
         assets=pf["in_market"],
         alternative_assets=pf["out_market"],
+        all_or_none=False,
         start_trading_date=real_start_trading_date
     ) for pf in portfolios
 ]
 
-tests = [bt.Backtest(s, d) for s in strategys]
+# %%
+chidren_weights = {"주식A": 0.2, "주식B": 0.2, "채권": 0.4, "원자재": 0.2}
+chidren_tickers = list(chidren_weights.keys())
+parents_s = bt.Strategy('parent', [
+    bt.algos.RunAfterDate(real_start_trading_date),
+    bt.algos.RunMonthly(),
+    bt.algos.SelectAll(),
+    bt.algos.WeighSpecified(**chidren_weights),
+    # bt.algos.WeighEqually(),
+    bt.algos.Rebalance(),
+    bt.algos.PrintInfo(
+        '{name}:{now}. Value:{_value:0.0f}, Price:{_price:0.4f}'
+    ),
+    bt.algos.PrintTempData()
+], strategys)
+
+
+tests = bt.Backtest(parents_s, d)
 
 # %%
-# res = bt.run(*benchmark_tests, *tests)
-res = bt.run(*benchmark_tests, *tests)
+# res = bt.run(tests)
+res = bt.run(*benchmark_tests, tests)
 
 # %%
 res.display()
