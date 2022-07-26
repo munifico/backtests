@@ -166,6 +166,36 @@ portfolios = [
             "in_market": ["TLT", "SHY", "IEF", "TIP"],
             "out_market": ["BIL"]
         }
+    },
+    {
+        "name": "M163",
+        "weight": {"SAA": 0.1, "MAA1": 0.6, "MAA2": 0.3},
+        "SAA": {
+            "weight": {'GLD': 1.0}
+        },
+        "MAA1": {
+            "in_market": ["SPY", "QQQ", "VWO"],
+            "out_market": ["TLT"]
+        },
+        "MAA2": {
+            "in_market": ["TLT", "SHY", "IEF", "TIP"],
+            "out_market": ["BIL"]
+        }
+    },
+    {
+        "name": "M152",
+        "weight": {"SAA": 0.2, "MAA1": 0.55, "MAA2": 0.25},
+        "SAA": {
+            "weight": {'GLD': 1.0}
+        },
+        "MAA1": {
+            "in_market": ["SPY", "QQQ", "VWO"],
+            "out_market": ["TLT"]
+        },
+        "MAA2": {
+            "in_market": ["TLT", "SHY", "IEF", "TIP"],
+            "out_market": ["BIL"]
+        }
     }
 ]
 
